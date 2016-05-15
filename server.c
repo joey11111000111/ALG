@@ -60,7 +60,7 @@ int receive_message(int client_socket) {
 }
 
 char read_and_check_message() {
-	printf("Enter your message: ");
+	printf("You: ");
 	fgets(buffer, BUFFERSIZE - 1, stdin);
 	if ( strlen(buffer) >= 2 && buffer[0] == ':' )
 		return buffer[1];
@@ -92,7 +92,7 @@ int main(int argc, char * argv[]) {
 			if (received == 0)
 				break;
 
-			printf("\tclient: %s", buffer);
+			printf("client: %s", buffer);
 			
 			shutdown = read_and_check_message();
 			if (shutdown == SHUTDOWN_CLIENT || shutdown == SHUTDOWN_SERVER)

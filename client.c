@@ -35,7 +35,7 @@ void connect_to_server(int client_socket) {
 	memset(&serverSettings, '0', sizeof(serverSettings));
 	serverSettings.sin_family = AF_INET;
 	serverSettings.sin_addr.s_addr = inet_addr("127.0.0.1");
-	serverSettings.sin_port = htons(4000);
+	serverSettings.sin_port = htons(3000);
 	
 	int connection_result = connect(client_socket, (struct sockaddr *) & serverSettings, sizeof(serverSettings));
 	if (connection_result < 0)
@@ -43,7 +43,7 @@ void connect_to_server(int client_socket) {
 }
 
 bool read_and_check_message() {
-	printf("Enter your message: ");
+	printf("You: ");
 	fgets(buffer, BUFFERSIZE - 1, stdin);
 	if ( strlen(buffer) >= 2 && buffer[0] == ':' && buffer[1] == 'q' )
 		return true;
@@ -64,7 +64,7 @@ bool receive_message(int client_socket) {
 		kill("failed to receive message from client");
 	if (received == 0)
 		return true;
-	printf("\tserver: %s", buffer);
+	printf("server: %s", buffer);
 	return false;
 }
 
