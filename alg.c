@@ -6,17 +6,23 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
+#define COLOR_BLACK   "\x1b[40m"
+#define COLOR_YELLOW  "\x1b[33m"
+#define COLOR_CYAN    "\x1b[36m"
+#define COLOR_RESET   "\x1b[0m"
+
 #define BUFFERSIZE 1024
 void kill(const char * message) {perror(message); exit(1);}
 char buffer[BUFFERSIZE];
 
 
-int prepare_own_server_socket() {
+
+int prepare_own_server_socket(short own_server_port) {
 	struct sockaddr_in ownServerSettings;
 	memset(&ownServerSettings, '0', sizeof(ownServerSettings));
 	ownServerSettings.sin_family = AF_INET;
 	ownServerSettings.sin_addr.s_addr = htonl(INADDR_ANY);
-	ownServerSettings.sin_port = htons(3000);
+	ownServerSettings.sin_port = htons(own_server_port);
 	
 	int own_server_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (own_server_socket < 0)
@@ -55,12 +61,12 @@ int prepare_own_client_socket() {
 	return own_client_socket;
 }
 
-void connect_to_real_server(int own_client_socket) {
+void connect_to_real_server(int own_client_socket, const char * real_server_ip, short real_server_port) {
 	struct sockaddr_in realServerSettings;
 	memset(&realServerSettings, '0', sizeof(realServerSettings));
 	realServerSettings.sin_family = AF_INET;
-	realServerSettings.sin_addr.s_addr = htonl(INADDR_ANY);
-	realServerSettings.sin_port = htons(4000);
+	realServerSettings.sin_addr.s_addr = inet_addr(real_server_ip);
+	realServerSettings.sin_port = htons(real_server_port);
 	
 	int connection_result = connect(own_client_socket, (struct sockaddr *) & realServerSettings, sizeof(realServerSettings));
 	if (connection_result < 0)
@@ -98,9 +104,17 @@ void send_message_to(int sockfd) {
 
 
 
-int main() {
+int main(int argc, char * argv[]) {
 	
-	int own_server_socket = prepare_own_server_socket();
+	if (argc != 4) {
+		printf(COLOR_BLACK "usage: ./alg <alg server port> <real server ip> <real server port>\n" COLOR_RESET);
+		return 1;
+	}
+	
+	short own_server_port = atoi(argv[1]);
+	short real_server_port = atoi(argv[3]);
+	
+	int own_server_socket = prepare_own_server_socket(own_server_port);
 	
  
 	while (1) {
@@ -108,20 +122,20 @@ int main() {
 		printf("------- real client connected --------\n");
 		
 		int own_client_socket = prepare_own_client_socket();
-		connect_to_real_server(own_client_socket);
+		connect_to_real_server(own_client_socket, argv[2], real_server_port);
 		printf("------ connected to real server ------\n");
 
 		while (1) {
 			int received = receive_message(real_client_socket);
 			if (received == 0)
 				break;
-			printf("client: %s", buffer);
+			printf("client: " COLOR_CYAN "%s" COLOR_RESET, buffer);
 			send_message_to(own_client_socket);
 			
 			received = receive_message(own_client_socket);
 			if (received == 0)
 				break;
-			printf("server: %s", buffer);
+			printf("server: " COLOR_YELLOW "%s" COLOR_RESET, buffer);
 			send_message_to(real_client_socket);
 		}//inner while
 

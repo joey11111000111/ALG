@@ -6,6 +6,11 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
+#define COLOR_BLACK   "\x1b[40m"
+#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_YELLOW  "\x1b[33m"
+#define COLOR_RESET   "\x1b[0m"
+
 #define BUFFERSIZE 1024
 void kill(const char * message) {perror(message); exit(1);}
 char buffer[BUFFERSIZE];
@@ -30,12 +35,12 @@ int create_and_configure_socket() {
 	return client_socket;
 }
 
-void connect_to_server(int client_socket) {
+void connect_to_server(int client_socket, const char * server_ip, short server_port) {
 	struct sockaddr_in serverSettings;
 	memset(&serverSettings, '0', sizeof(serverSettings));
 	serverSettings.sin_family = AF_INET;
-	serverSettings.sin_addr.s_addr = inet_addr("127.0.0.1");
-	serverSettings.sin_port = htons(3000);
+	serverSettings.sin_addr.s_addr = inet_addr(server_ip);
+	serverSettings.sin_port = htons(server_port);
 	
 	int connection_result = connect(client_socket, (struct sockaddr *) & serverSettings, sizeof(serverSettings));
 	if (connection_result < 0)
@@ -43,8 +48,10 @@ void connect_to_server(int client_socket) {
 }
 
 bool read_and_check_message() {
-	printf("You: ");
+	printf("You: " COLOR_GREEN);
 	fgets(buffer, BUFFERSIZE - 1, stdin);
+	printf(COLOR_RESET);
+	
 	if ( strlen(buffer) >= 2 && buffer[0] == ':' && buffer[1] == 'q' )
 		return true;
 	return false;
@@ -64,15 +71,22 @@ bool receive_message(int client_socket) {
 		kill("failed to receive message from client");
 	if (received == 0)
 		return true;
-	printf("server: %s", buffer);
+	printf("server: " COLOR_YELLOW "%s" COLOR_RESET, buffer);
 	return false;
 }
 
 
 int main(int argc, char * argv[]) {
 	
+	if (argc != 3) {
+		printf(COLOR_BLACK "usage: ./cli <alg ip> <alg port>" COLOR_RESET "\n");
+		return 1;
+	}
+	
+	short server_port = atoi(argv[2]);
+	
 	int client_socket = create_and_configure_socket();
-	connect_to_server(client_socket);
+	connect_to_server(client_socket, argv[1], server_port);
 	
 	// send message
 	while (1) {

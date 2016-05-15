@@ -6,6 +6,11 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
+#define COLOR_BLACK   "\x1b[40m"
+#define COLOR_GREEN   "\x1b[32m"
+#define COLOR_CYAN    "\x1b[36m"
+#define COLOR_RESET   "\x1b[0m"
+
 #define BUFFERSIZE 1024
 void kill(const char * message) {perror(message); exit(1);}
 
@@ -60,8 +65,10 @@ int receive_message(int client_socket) {
 }
 
 char read_and_check_message() {
-	printf("You: ");
+	printf("You: " COLOR_GREEN);
 	fgets(buffer, BUFFERSIZE - 1, stdin);
+	printf(COLOR_RESET);
+	
 	if ( strlen(buffer) >= 2 && buffer[0] == ':' )
 		return buffer[1];
 	
@@ -78,7 +85,13 @@ void send_message(int client_socket) {
 
 int main(int argc, char * argv[]) {
 	
-	int server_socket = prepare_server_socket(4000);
+	if (argc != 2) {
+		printf(COLOR_BLACK "usage: ./ser <server port>" COLOR_RESET "\n");
+		return 1;
+	}
+	
+	short server_port = atoi(argv[1]);
+	int server_socket = prepare_server_socket(server_port);
 	
 
 	
@@ -92,7 +105,7 @@ int main(int argc, char * argv[]) {
 			if (received == 0)
 				break;
 
-			printf("client: %s", buffer);
+			printf("client: " COLOR_CYAN "%s" COLOR_RESET, buffer);
 			
 			shutdown = read_and_check_message();
 			if (shutdown == SHUTDOWN_CLIENT || shutdown == SHUTDOWN_SERVER)
