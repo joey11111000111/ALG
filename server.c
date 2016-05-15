@@ -8,7 +8,11 @@
 
 #define BUFFERSIZE 1024
 void kill(const char * message) {perror(message); exit(1);}
+
 char buffer[BUFFERSIZE];
+char SHUTDOWN_SERVER = 'Q';
+char SHUTDOWN_CLIENT = 'q';
+
 
 /* Creates the server socket, binds it and listens to it */
 int prepare_server_socket(short port) {
@@ -55,12 +59,13 @@ int receive_message(int client_socket) {
 	return received;
 }
 
-bool read_and_check_message() {
+char read_and_check_message() {
 	printf("Enter your message: ");
 	fgets(buffer, BUFFERSIZE - 1, stdin);
-	if ( strlen(buffer) >= 2 && buffer[0] == ':' && buffer[1] == 'q' )
-		return true;
-	return false;
+	if ( strlen(buffer) >= 2 && buffer[0] == ':' )
+		return buffer[1];
+	
+	return '0';
 }
 
 void send_message(int client_socket) {
@@ -74,22 +79,37 @@ void send_message(int client_socket) {
 int main(int argc, char * argv[]) {
 	
 	int server_socket = prepare_server_socket(4000);
-	int client_socket = accept_connection(server_socket);
+	
+
 	
 	while (1) {
-		int received = receive_message(client_socket);
-		if (received == 0)
-			break;
+		int client_socket = accept_connection(server_socket);
+		printf("------ connection established ------\n");
+		
+		char shutdown;
+		while (1) {
+			int received = receive_message(client_socket);
+			if (received == 0)
+				break;
 
-		printf("\tMessage from client: %s", buffer);
+			printf("\tclient: %s", buffer);
+			
+			shutdown = read_and_check_message();
+			if (shutdown == SHUTDOWN_CLIENT || shutdown == SHUTDOWN_SERVER)
+				break;
+			
+			send_message(client_socket);
+		}//while
+	
+		close(client_socket);
+		printf("-------- connection closed ---------\n");
 		
-		if (read_and_check_message())
+		if (shutdown == SHUTDOWN_SERVER)
 			break;
-		
-		send_message(client_socket);
 	}//while
 	
 	close(server_socket);
+	printf("--------- server shutdown ----------\n");
 	
 	return 0;
 }//main

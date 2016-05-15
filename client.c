@@ -64,7 +64,7 @@ bool receive_message(int client_socket) {
 		kill("failed to receive message from client");
 	if (received == 0)
 		return true;
-	printf("\tMessage from server: %s", buffer);
+	printf("\tserver: %s", buffer);
 	return false;
 }
 
