@@ -19,18 +19,18 @@ int create_and_configure_socket() {
 	int client_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (client_socket < 0)
 		kill("failed to create client socket");
-	int option = 1;
-	setsockopt(client_socket, SOL_SOCKET, (SO_REUSEPORT | SO_REUSEADDR), (char * ) & option, sizeof(option));
+	//~ int option = 1;
+	//~ setsockopt(client_socket, SOL_SOCKET, (SO_REUSEPORT | SO_REUSEADDR), (char * ) & option, sizeof(option));
 	
-	struct sockaddr_in clientSettings;
-	memset(&clientSettings, '0', sizeof(clientSettings));
-	clientSettings.sin_family = AF_INET;
-	clientSettings.sin_addr.s_addr = inet_addr("127.0.0.1");
-	clientSettings.sin_port = htons(4040);
-	
-	int bind_result = bind(client_socket, (struct sockaddr *) & clientSettings, sizeof(clientSettings));
-	if (bind_result < 0)
-		kill("failed to bind client socket");
+	//~ struct sockaddr_in clientSettings;
+	//~ memset(&clientSettings, '0', sizeof(clientSettings));
+	//~ clientSettings.sin_family = AF_INET;
+	//~ clientSettings.sin_addr.s_addr = inet_addr("127.0.0.1");
+	//~ clientSettings.sin_port = htons(4040);
+	//~ 
+	//~ int bind_result = bind(client_socket, (struct sockaddr *) & clientSettings, sizeof(clientSettings));
+	//~ if (bind_result < 0)
+		//~ kill("failed to bind client socket");
 	
 	return client_socket;
 }
@@ -79,7 +79,7 @@ bool receive_message(int client_socket) {
 int main(int argc, char * argv[]) {
 	
 	if (argc != 3) {
-		printf(COLOR_BLACK "usage: ./cli <alg ip> <alg port>" COLOR_RESET "\n");
+		printf(COLOR_BLACK "usage: ./cli <alg ip> <alg server port>" COLOR_RESET "\n");
 		return 1;
 	}
 	
