@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 
 #define COLOR_BLACK   "\x1b[40m"
 #define COLOR_YELLOW  "\x1b[33m"
